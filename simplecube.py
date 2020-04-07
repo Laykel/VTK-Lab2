@@ -3,93 +3,99 @@
 """
 Lab: 2-Simple cube
 Authors: Claude-André Alves, Luc Wachter
-Description: Create a cube using squares, triangles or triangle strips, write the result to disk.
+Description: Create a cube using squares, triangles or triangle strips, write the results to disk.
 Python version: 3.7.4
 """
+
+# vtkCellArray using quadrilateral cells
+# vtkPolyDataWriter
+# vtkPolyDataReader
+# Same but with 12 triangles instead of 6 squares
+# Same but with a triangle strip
+# Add scalar values to each vertex
 
 import vtk
 
 
-if __name__ == "__main__":
-    #
-    # Next we create an instance of vtkConeSource and set some of its
-    # properties. The instance of vtkConeSource "cone" is part of a visualization
-    # pipeline (it is a source process object); it produces data (output type is
-    # vtkPolyData) which other filters may process.
-    #
-    cone = vtk.vtkConeSource()
-    cone.SetHeight(3.0)
-    cone.SetRadius(1.0)
-    cone.SetResolution(10)
+def cube_from_quads(pts, quads):
+    # Create the geometry (coordinates)
+    points = vtk.vtkPoints()
+    # Store attributes
+    scalars = vtk.vtkFloatArray()
 
-    #
-    # In this example we terminate the pipeline with a mapper process object.
-    # (Intermediate filters such as vtkShrinkPolyData could be inserted in
-    # between the source and the mapper.)  We create an instance of
-    # vtkPolyDataMapper to map the polygonal data into graphics primitives. We
-    # connect the output of the cone source to the input of this mapper.
-    #
-    coneMapper = vtk.vtkPolyDataMapper()
-    coneMapper.SetInputConnection(cone.GetOutputPort())
+    for i, pt in enumerate(pts):
+        points.InsertPoint(i, pt)
+        scalars.InsertTuple1(i, i)
 
-    #
-    # Create an actor to represent the cone. The actor orchestrates rendering of
-    # the mapper's graphics primitives. An actor also refers to properties via a
-    # vtkProperty instance, and includes an internal transformation matrix. We
-    # set this actor's mapper to be coneMapper which we created above.
-    #
-    coneActor = vtk.vtkActor()
-    coneActor.SetMapper(coneMapper)
+    # Create the topology (cells)
+    polys = vtk.vtkCellArray()
 
-    #
-    # Create the Renderer and assign actors to it. A renderer is like a
-    # viewport. It is part or all of a window on the screen and it is responsible
-    # for drawing the actors it has.  We also set the background color here.
-    #
-    ren1 = vtk.vtkRenderer()
-    ren1.AddActor(coneActor)
-    ren1.SetBackground(0.1, 0.2, 0.4)
+    for quad in quads:
+        polys.InsertNextCell(4, quad)
 
-    #
-    # Finally we create the render window which will show up on the screen
-    # We put our renderer into the render window using AddRenderer. We also
-    # set the size to be 300 pixels by 300.
-    #
-    renWin = vtk.vtkRenderWindow()
-    renWin.AddRenderer(ren1)
-    renWin.SetSize(300, 300)
+    # Create a polydata object
+    cube = vtk.vtkPolyData()
+    # Set the points and polys as the geometry and topology of the polydata
+    cube.SetPoints(points)
+    cube.SetPolys(polys)
 
-    #
-    # The vtkRenderWindowInteractor class watches for events (e.g., keypress,
-    # mouse) in the vtkRenderWindow. These events are translated into
-    # event invocations that VTK understands (see VTK/Common/vtkCommand.h
-    # for all events that VTK processes). Then observers of these VTK
-    # events can process them as appropriate.
-    iren = vtk.vtkRenderWindowInteractor()
-    iren.SetRenderWindow(renWin)
+    # Set scalars
+    cube.GetPointData().SetScalars(scalars)
 
-    #
-    # By default the vtkRenderWindowInteractor instantiates an instance
-    # of vtkInteractorStyle. vtkInteractorStyle translates a set of events
-    # it observes into operations on the camera, actors, and/or properties
-    # in the vtkRenderWindow associated with the vtkRenderWindowInteractor.
-    # Here we specify a particular interactor style.
+    return cube
+
+
+def cube_from_triangles():
+    pass
+
+
+def cube_from_strip():
+    pass
+
+
+def main():
+    colors = vtk.vtkNamedColors()
+
+    # Points for a cube centered on (0, 0, 0)
+    pts = [(-0.5, -0.5, -0.5), (0.5, -0.5, -0.5), (0.5, -0.5, 0.5), (-0.5, -0.5, 0.5),
+           (-0.5, 0.5, 0.5), (0.5, 0.5, 0.5), (0.5, 0.5, -0.5), (-0.5, 0.5, -0.5)]
+    quads = [(0, 1, 2, 3), (0, 3, 4, 7), (0, 1, 6, 7),
+             (1, 2, 5, 6), (2, 3, 4, 5), (4, 5, 6, 7)]
+
+    cube = cube_from_quads(pts, quads)
+
+    # Visualize
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputData(cube)
+    mapper.SetScalarRange(cube.GetScalarRange())
+
+    actor = vtk.vtkActor()
+    actor.SetMapper(mapper)
+
+    renderer = vtk.vtkRenderer()
+    renderer.AddActor(actor)
+    # renderer.SetBackground(colors.GetColor3d("DarkGreen"))
+    renderer.SetBackground(colors.GetColor3d("Cornsilk"))
+
+    # Window properties
+    ren_win = vtk.vtkRenderWindow()
+    ren_win.SetWindowName("The good cube")
+    ren_win.SetSize(600, 600)
+    ren_win.AddRenderer(renderer)
+
+    # Watch for events
+    interactor = vtk.vtkRenderWindowInteractor()
+    interactor.SetRenderWindow(ren_win)
+
+    # Set the interactor style
     style = vtk.vtkInteractorStyleTrackballCamera()
-    iren.SetInteractorStyle(style)
+    interactor.SetInteractorStyle(style)
 
-    #
-    # Unlike the previous scripts where we performed some operations and then
-    # exited, here we leave an event loop running. The user can use the mouse
-    # and keyboard to perform the operations on the scene according to the
-    # current interaction style.
-    #
+    # Initialize and start the event loop
+    interactor.Initialize()
+    interactor.Start()
 
-    #
-    # Initialize and start the event loop. Once the render window appears, mouse
-    # in the window to move the camera. The Start() method executes an event
-    # loop which listens to user mouse and keyboard events. Note that keypress-e
-    # exits the event loop. (Look in vtkInteractorStyle.h for a summary of events, or
-    # the appropriate Doxygen documentation.)
-    #
-    iren.Initialize()
-    iren.Start()
+
+# Main instructions
+if __name__ == "__main__":
+    main()
