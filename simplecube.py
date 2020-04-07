@@ -7,26 +7,13 @@ Description: Create a cube using squares, triangles or triangle strips, write th
 Python version: 3.7.4
 """
 
-# vtkCellArray using quadrilateral cells
-# vtkPolyDataWriter
-# vtkPolyDataReader
-# Same but with 12 triangles instead of 6 squares
-# Same but with a triangle strip
-# Add scalar values to each vertex
-
 import vtk
 
 
-def cube_from_quads(pts, quads):
+def cube_from_quads(points, scalars):
     """Get cube polydata from 6 quadrilateral sides"""
-    # Create the geometry (coordinates)
-    points = vtk.vtkPoints()
-    # Store attributes
-    scalars = vtk.vtkFloatArray()
-
-    for i, pt in enumerate(pts):
-        points.InsertPoint(i, pt)
-        scalars.InsertTuple1(i, i)
+    quads = [(0, 1, 2, 3), (0, 3, 4, 7), (0, 1, 6, 7),
+             (1, 2, 5, 6), (2, 3, 4, 5), (4, 5, 6, 7)]
 
     # Create the topology (cells)
     polys = vtk.vtkCellArray()
@@ -48,6 +35,9 @@ def cube_from_quads(pts, quads):
 
 def cube_from_triangles():
     """Get cube polydata from 12 triangular sides"""
+    triangles = [(0, 1, 3), (1, 2, 3), (2, 3, 5), (3, 4, 5),
+                 (4, 5, 6), (4, 6, 7), (0, 3, 7), (3, 4, 7),
+                 (2, 5, 6), (2, 1, 6), (0, 1, 6), (0, 6, 7)]
     pass
 
 
@@ -78,11 +68,21 @@ def main():
     # Points for a cube centered on (0, 0, 0)
     pts = [(-0.5, -0.5, -0.5), (0.5, -0.5, -0.5), (0.5, -0.5, 0.5), (-0.5, -0.5, 0.5),
            (-0.5, 0.5, 0.5), (0.5, 0.5, 0.5), (0.5, 0.5, -0.5), (-0.5, 0.5, -0.5)]
-    quads = [(0, 1, 2, 3), (0, 3, 4, 7), (0, 1, 6, 7),
-             (1, 2, 5, 6), (2, 3, 4, 5), (4, 5, 6, 7)]
 
-    cube = cube_from_quads(pts, quads)
-    # write_to_file(cube, "cube1.vtk")
+    # Create the geometry (coordinates)
+    points = vtk.vtkPoints()
+    # Store attributes
+    scalars = vtk.vtkFloatArray()
+
+    for i, pt in enumerate(pts):
+        points.InsertPoint(i, pt)
+        scalars.InsertTuple1(i, i)
+
+    # Create cube from cells
+    cube = cube_from_quads(points, scalars)
+    write_to_file(cube, "cube_from_quads.vtk")
+    # cube = cube_from_triangles(points, scalars)
+    # write_to_file(cube, "cube_from_triangles.vtk")
     # cube = read_from_file("cube1.vtk")
 
     # Visualize
