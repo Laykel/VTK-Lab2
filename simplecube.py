@@ -18,6 +18,7 @@ import vtk
 
 
 def cube_from_quads(pts, quads):
+    """Get cube polydata from 6 quadrilateral sides"""
     # Create the geometry (coordinates)
     points = vtk.vtkPoints()
     # Store attributes
@@ -46,11 +47,29 @@ def cube_from_quads(pts, quads):
 
 
 def cube_from_triangles():
+    """Get cube polydata from 12 triangular sides"""
     pass
 
 
 def cube_from_strip():
+    """Get cube polydata from a triangle strip"""
     pass
+
+
+def write_to_file(cube, filename):
+    """Write polydata geometry, topology and attributes to file"""
+    writer = vtk.vtkPolyDataWriter()
+    writer.SetInputData(cube)
+    writer.SetFileName(filename)
+    writer.Write()
+
+
+def read_from_file(filename):
+    """Read polydata geometry, topology and attributes from file"""
+    reader = vtk.vtkPolyDataReader()
+    reader.SetFileName(filename)
+    reader.Update()
+    return reader.GetOutput()
 
 
 def main():
@@ -63,6 +82,8 @@ def main():
              (1, 2, 5, 6), (2, 3, 4, 5), (4, 5, 6, 7)]
 
     cube = cube_from_quads(pts, quads)
+    # write_to_file(cube, "cube1.vtk")
+    # cube = read_from_file("cube1.vtk")
 
     # Visualize
     mapper = vtk.vtkPolyDataMapper()
@@ -74,7 +95,6 @@ def main():
 
     renderer = vtk.vtkRenderer()
     renderer.AddActor(actor)
-    # renderer.SetBackground(colors.GetColor3d("DarkGreen"))
     renderer.SetBackground(colors.GetColor3d("Cornsilk"))
 
     # Window properties
