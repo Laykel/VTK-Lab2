@@ -10,12 +10,13 @@ Python version: 3.7.4
 import vtk
 
 
-def cube_from_faces(points, faces, scalars):
+def cube_from_faces(points, cells, scalars):
+    """Create cube polydata from the geometry and topology given in parameters"""
     # Create the topology (cells)
     polys = vtk.vtkCellArray()
 
-    for face in faces:
-        polys.InsertNextCell(len(face), face)
+    for cell in cells:
+        polys.InsertNextCell(len(cell), cell)
 
     # Create a polydata object
     cube = vtk.vtkPolyData()
@@ -30,7 +31,8 @@ def cube_from_faces(points, faces, scalars):
 
 
 def cube_from_quads(points, scalars):
-    """Get cube polydata from 6 quadrilateral sides"""
+    """Create cube polydata from 6 quadrilateral sides"""
+    # Define cells using points indices
     quads = [(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4),
              (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
 
@@ -38,7 +40,8 @@ def cube_from_quads(points, scalars):
 
 
 def cube_from_triangles(points, scalars):
-    """Get cube polydata from 12 triangular sides"""
+    """Create cube polydata from 12 triangular sides"""
+    # Define cells using points indices
     triangles = [(0, 3, 1), (1, 3, 2), (0, 1, 5), (0, 5, 4),
                  (0, 4, 3), (3, 4, 7), (1, 2, 5), (2, 6, 5),
                  (2, 3, 7), (2, 7, 6), (4, 5, 6), (4, 6, 7)]
@@ -46,9 +49,12 @@ def cube_from_triangles(points, scalars):
     return cube_from_faces(points, triangles, scalars)
 
 
-def cube_from_strip():
-    """Get cube polydata from a triangle strip"""
-    pass
+def cube_from_strip(points, scalars):
+    """Create cube polydata from a triangle strip"""
+    # series = [0, 1, 4, 5, 6, 1, 2, 0, 3, 4, 7, 6, 3, 2]
+    series = [(4, 5, 6, 7)]
+
+    return cube_from_faces(points, series, scalars)
 
 
 def write_to_file(cube, filename):
@@ -67,6 +73,7 @@ def read_from_file(filename):
     return reader.GetOutput()
 
 
+# Main instructions
 def main():
     colors = vtk.vtkNamedColors()
 
@@ -86,9 +93,11 @@ def main():
     # Create cube from cells
     # cube = cube_from_quads(points, scalars)
     # write_to_file(cube, "cube_from_quads.vtk")
-    cube = cube_from_triangles(points, scalars)
-    # write_to_file(cube, "cube_from_triangles.vtk")
     # cube = read_from_file("cube_from_quads.vtk")
+    # cube = cube_from_triangles(points, scalars)
+    # write_to_file(cube, "cube_from_triangles.vtk")
+    # cube = read_from_file("cube_from_triangles.vtk")
+    cube = cube_from_strip(points, scalars)
 
     # Visualize
     mapper = vtk.vtkPolyDataMapper()
@@ -125,6 +134,5 @@ def main():
     interactor.Start()
 
 
-# Main instructions
 if __name__ == "__main__":
     main()
