@@ -39,9 +39,9 @@ def cube_from_quads(points, scalars):
 
 def cube_from_triangles(points, scalars):
     """Get cube polydata from 12 triangular sides"""
-    triangles = [(0, 1, 3), (1, 2, 3), (2, 3, 5), (3, 4, 5),
-                 (4, 5, 6), (4, 6, 7), (0, 3, 7), (3, 4, 7),
-                 (2, 5, 6), (2, 1, 6), (0, 1, 6), (0, 6, 7)]
+    triangles = [(0, 3, 1), (1, 3, 2), (0, 1, 5), (0, 5, 4),
+                 (0, 4, 3), (3, 4, 7), (1, 2, 5), (2, 6, 5),
+                 (2, 3, 7), (2, 7, 6), (4, 5, 6), (4, 6, 7)]
 
     return cube_from_faces(points, triangles, scalars)
 
@@ -84,9 +84,9 @@ def main():
         scalars.InsertTuple1(i, i)
 
     # Create cube from cells
-    cube = cube_from_quads(points, scalars)
+    # cube = cube_from_quads(points, scalars)
     # write_to_file(cube, "cube_from_quads.vtk")
-    # cube = cube_from_triangles(points, scalars)
+    cube = cube_from_triangles(points, scalars)
     # write_to_file(cube, "cube_from_triangles.vtk")
     # cube = read_from_file("cube_from_quads.vtk")
 
