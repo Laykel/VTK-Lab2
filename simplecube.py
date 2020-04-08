@@ -10,16 +10,12 @@ Python version: 3.7.4
 import vtk
 
 
-def cube_from_quads(points, scalars):
-    """Get cube polydata from 6 quadrilateral sides"""
-    quads = [(0, 1, 2, 3), (0, 3, 4, 7), (0, 1, 6, 7),
-             (1, 2, 5, 6), (2, 3, 4, 5), (4, 5, 6, 7)]
-
+def cube_from_faces(points, faces, scalars):
     # Create the topology (cells)
     polys = vtk.vtkCellArray()
 
-    for quad in quads:
-        polys.InsertNextCell(4, quad)
+    for face in faces:
+        polys.InsertNextCell(len(face), face)
 
     # Create a polydata object
     cube = vtk.vtkPolyData()
@@ -33,12 +29,21 @@ def cube_from_quads(points, scalars):
     return cube
 
 
-def cube_from_triangles():
+def cube_from_quads(points, scalars):
+    """Get cube polydata from 6 quadrilateral sides"""
+    quads = [(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4),
+             (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
+
+    return cube_from_faces(points, quads, scalars)
+
+
+def cube_from_triangles(points, scalars):
     """Get cube polydata from 12 triangular sides"""
     triangles = [(0, 1, 3), (1, 2, 3), (2, 3, 5), (3, 4, 5),
                  (4, 5, 6), (4, 6, 7), (0, 3, 7), (3, 4, 7),
                  (2, 5, 6), (2, 1, 6), (0, 1, 6), (0, 6, 7)]
-    pass
+
+    return cube_from_faces(points, triangles, scalars)
 
 
 def cube_from_strip():
@@ -66,8 +71,8 @@ def main():
     colors = vtk.vtkNamedColors()
 
     # Points for a cube centered on (0, 0, 0)
-    pts = [(-0.5, -0.5, -0.5), (0.5, -0.5, -0.5), (0.5, -0.5, 0.5), (-0.5, -0.5, 0.5),
-           (-0.5, 0.5, 0.5), (0.5, 0.5, 0.5), (0.5, 0.5, -0.5), (-0.5, 0.5, -0.5)]
+    pts = [(-0.5, -0.5, -0.5), (0.5, -0.5, -0.5), (0.5, 0.5, -0.5), (-0.5, 0.5, -0.5),
+           (-0.5, -0.5, 0.5), (0.5, -0.5, 0.5), (0.5, 0.5, 0.5), (-0.5, 0.5, 0.5)]
 
     # Create the geometry (coordinates)
     points = vtk.vtkPoints()
@@ -80,10 +85,10 @@ def main():
 
     # Create cube from cells
     cube = cube_from_quads(points, scalars)
-    write_to_file(cube, "cube_from_quads.vtk")
+    # write_to_file(cube, "cube_from_quads.vtk")
     # cube = cube_from_triangles(points, scalars)
     # write_to_file(cube, "cube_from_triangles.vtk")
-    # cube = read_from_file("cube1.vtk")
+    # cube = read_from_file("cube_from_quads.vtk")
 
     # Visualize
     mapper = vtk.vtkPolyDataMapper()
@@ -92,6 +97,10 @@ def main():
 
     actor = vtk.vtkActor()
     actor.SetMapper(mapper)
+
+    # Test faces' orientation
+    # actor.GetProperty().FrontfaceCullingOn()
+    # actor.GetProperty().BackfaceCullingOn()
 
     renderer = vtk.vtkRenderer()
     renderer.AddActor(actor)
