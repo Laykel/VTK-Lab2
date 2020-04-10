@@ -51,10 +51,23 @@ def cube_from_triangles(points, scalars):
 
 def cube_from_strip(points, scalars):
     """Create cube polydata from a triangle strip"""
-    # series = [0, 1, 4, 5, 6, 1, 2, 0, 3, 4, 7, 6, 3, 2]
-    series = [(4, 5, 6, 7)]
+    series = [0, 1, 4, 5, 6, 1, 2, 0, 3, 4, 7, 6, 3, 2]
 
-    return cube_from_faces(points, series, scalars)
+    # Create the topology (cells)
+    strip = vtk.vtkCellArray()
+
+    strip.InsertNextCell(len(series), series)
+
+    # Create a polydata object
+    cube = vtk.vtkPolyData()
+    # Set the points and strip as the geometry and topology of the polydata
+    cube.SetPoints(points)
+    cube.SetStrips(strip)
+
+    # Set scalars
+    cube.GetPointData().SetScalars(scalars)
+
+    return cube
 
 
 def write_to_file(cube, filename):
@@ -91,13 +104,15 @@ def main():
         scalars.InsertTuple1(i, i)
 
     # Create cube from cells
-    # cube = cube_from_quads(points, scalars)
+    cube = cube_from_quads(points, scalars)
     # write_to_file(cube, "cube_from_quads.vtk")
     # cube = read_from_file("cube_from_quads.vtk")
     # cube = cube_from_triangles(points, scalars)
     # write_to_file(cube, "cube_from_triangles.vtk")
     # cube = read_from_file("cube_from_triangles.vtk")
-    cube = cube_from_strip(points, scalars)
+    # cube = cube_from_strip(points, scalars)
+    # write_to_file(cube, "cube_from_strip.vtk")
+    # cube = read_from_file("cube_from_strip.vtk")
 
     # Visualize
     mapper = vtk.vtkPolyDataMapper()
