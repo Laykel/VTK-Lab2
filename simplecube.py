@@ -4,13 +4,14 @@
 Lab: 2-Simple cube
 Authors: Claude-André Alves, Luc Wachter
 Description: Create a cube using squares, triangles or triangle strips, write the results to disk.
+Date: 10.04.2020
 Python version: 3.7.4
 """
 
 import vtk
 
 
-def cube_from_faces(points, cells, scalars, strip=False):
+def cube_from_cells(points, cells, scalars, strip=False):
     """Create cube polydata from the geometry and topology given in parameters"""
     # Create the topology (cells)
     polys = vtk.vtkCellArray()
@@ -41,7 +42,7 @@ def cube_from_quads(points, scalars):
     quads = [(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4),
              (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
 
-    return cube_from_faces(points, quads, scalars)
+    return cube_from_cells(points, quads, scalars)
 
 
 def cube_from_triangles(points, scalars):
@@ -51,17 +52,17 @@ def cube_from_triangles(points, scalars):
                  (0, 4, 3), (3, 4, 7), (1, 2, 5), (2, 6, 5),
                  (2, 3, 7), (2, 7, 6), (4, 5, 6), (4, 6, 7)]
 
-    return cube_from_faces(points, triangles, scalars)
+    return cube_from_cells(points, triangles, scalars)
 
 
 def cube_from_strip(points, scalars):
     """Create cube polydata from a triangle strip"""
     # Define strip using a series of points
-    # Each series of three points represents a triangle
-    # https://stackoverflow.com/questions/28375338/cube-using-single-gl-triangle-strip
+    # Each sequence of three vertices represents a triangle
+    # Vertex sequence inspired by: https://stackoverflow.com/questions/28375338/cube-using-single-gl-triangle-strip
     series = [(0, 1, 4, 5, 6, 1, 2, 0, 3, 4, 7, 6, 3, 2)]
 
-    return cube_from_faces(points, series, scalars, strip=True)
+    return cube_from_cells(points, series, scalars, strip=True)
 
 
 def write_to_file(cube, filename):
