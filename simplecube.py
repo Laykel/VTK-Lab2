@@ -10,7 +10,7 @@ Python version: 3.7.4
 import vtk
 
 
-def cube_from_faces(points, cells, scalars):
+def cube_from_faces(points, cells, scalars, strip=False):
     """Create cube polydata from the geometry and topology given in parameters"""
     # Create the topology (cells)
     polys = vtk.vtkCellArray()
@@ -20,9 +20,14 @@ def cube_from_faces(points, cells, scalars):
 
     # Create a polydata object
     cube = vtk.vtkPolyData()
-    # Set the points and polys as the geometry and topology of the polydata
+    # Set the geometry of the polydata
     cube.SetPoints(points)
-    cube.SetPolys(polys)
+
+    # Set the topology of the polydata
+    if not strip:
+        cube.SetPolys(polys)
+    else:
+        cube.SetStrips(polys)
 
     # Set scalars
     cube.GetPointData().SetScalars(scalars)
@@ -51,23 +56,12 @@ def cube_from_triangles(points, scalars):
 
 def cube_from_strip(points, scalars):
     """Create cube polydata from a triangle strip"""
-    series = [0, 1, 4, 5, 6, 1, 2, 0, 3, 4, 7, 6, 3, 2]
+    # Define strip using a series of points
+    # Each series of three points represents a triangle
+    # https://stackoverflow.com/questions/28375338/cube-using-single-gl-triangle-strip
+    series = [(0, 1, 4, 5, 6, 1, 2, 0, 3, 4, 7, 6, 3, 2)]
 
-    # Create the topology (cells)
-    strip = vtk.vtkCellArray()
-
-    strip.InsertNextCell(len(series), series)
-
-    # Create a polydata object
-    cube = vtk.vtkPolyData()
-    # Set the points and strip as the geometry and topology of the polydata
-    cube.SetPoints(points)
-    cube.SetStrips(strip)
-
-    # Set scalars
-    cube.GetPointData().SetScalars(scalars)
-
-    return cube
+    return cube_from_faces(points, series, scalars, strip=True)
 
 
 def write_to_file(cube, filename):
@@ -114,7 +108,7 @@ def main():
     # write_to_file(cube, "cube_from_strip.vtk")
     # cube = read_from_file("cube_from_strip.vtk")
 
-    # Visualize
+    # Map data and create actors
     mapper = vtk.vtkPolyDataMapper()
     mapper.SetInputData(cube)
     mapper.SetScalarRange(cube.GetScalarRange())
@@ -122,9 +116,9 @@ def main():
     actor = vtk.vtkActor()
     actor.SetMapper(mapper)
 
-    # Test faces' orientation
+    # Test the cells' orientation
     # actor.GetProperty().FrontfaceCullingOn()
-    # actor.GetProperty().BackfaceCullingOn()
+    actor.GetProperty().BackfaceCullingOn()
 
     renderer = vtk.vtkRenderer()
     renderer.AddActor(actor)
